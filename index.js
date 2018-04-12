@@ -22,8 +22,8 @@ const runnerConfig = {
 
 const run = async (config) => {
   const cookiesFilePath = './cookies.json'
-  let isRunSuccess = false;
   console.log(`Running ${config.id}`)
+  let isRunSuccess = false;
 
   const browser = await puppeteer.launch({args: [
       '--no-sandbox',
@@ -35,7 +35,7 @@ const run = async (config) => {
   await page.setViewport({ width: 1366, height: 768 })
   await preparePageEvasion(page);
 
-  // Set cookies if any existing cookies
+  // Check for cookies in path and set cookies if exists
   const previousCookies = fs.existsSync(cookiesFilePath)
   if (previousCookies) {
     // If file exist load the cookies
@@ -164,7 +164,8 @@ const run = async (config) => {
 
   // Take screenshot after everything is done
   await page.waitFor(2000)
-  const screenshotPath = `./screenshots/output_${config.id}.png`
+  const screenshotsFolder = './screenshots'
+  const screenshotPath = `${screenshotsFolder}/output_${config.id}.png`
   await page.screenshot({path: screenshotPath});
 
   const cookiesToSave = await page.cookies()
