@@ -1,7 +1,9 @@
 const puppeteer = require('puppeteer');
 const credentials = require('./credentials.json')
 const uuidv4 = require('uuid/v4');
-const preparePage = require('./prepare-page');
+const fs = require('fs');
+const helpers = require('./helpers')
+const preparePageEvasion = require('./prepare-page');
 
 // const runnerConfig = {
 //   id: uuidv4(),
@@ -12,35 +14,60 @@ const preparePage = require('./prepare-page');
 
 const runnerConfig = {
   id: uuidv4(),
-  youtubeLink: "https://youtu.be/JaPP0j09eII  ",
+  youtubeLink: "https://youtu.be/JaPP0j09eII",
   actions: ['subscribe'],
   comment: "wow this is awesome!"
 };
 
 
 const run = async (config) => {
+  const cookiesFilePath = './cookies.json'
+  let isRunSuccess = false;
   console.log(`Running ${config.id}`)
 
   const browser = await puppeteer.launch({args: [
       '--no-sandbox',
     ],
-    headless: true
+    headless: false
   });
 
   const page = await browser.newPage();
   await page.setViewport({ width: 1366, height: 768 })
-  await preparePage(page);
+  await preparePageEvasion(page);
 
-  // Login to Google
-  await page.goto('https://accounts.google.com/signin/v2/identifier?hl=EN&flowName=GlifWebSignIn&flowEntry=ServiceLogin');
-  await page.waitForSelector('#identifierId')
-  await page.type('#identifierId', credentials.username, { delay: 5 })
-  await page.click('#identifierNext')
-  await page.waitForSelector('#password input[type="password"]', { visible: true });
-  await page.type('#password input[type="password"]', credentials.password, { delay: 5 })
-  await page.waitFor(1000)
-  await page.click('#passwordNext')
-  await page.waitFor(3000)
+  // Set cookies if any existing cookies
+  const previousCookies = fs.existsSync(cookiesFilePath)
+  if (previousCookies) {
+    // If file exist load the cookies
+    const cookiesArr = require(cookiesFilePath)
+    if (cookiesArr.length !== 0) {
+      for (let cookie of cookiesArr) {
+        await page.setCookie(cookie)
+      }
+      console.log('Session has been loaded in the browser')
+    }
+  }
+
+  // Go to YouTube and check if signed in, if not sign in
+  await page.goto('https://youtube.com');
+  const SIGNIN_BUTTON_SELECTOR = 'ytd-button-renderer.style-scope.ytd-masthead.style-brand a.yt-simple-endpoint.style-scope.ytd-button-renderer'
+  if (await page.$(SIGNIN_BUTTON_SELECTOR) !== null) {
+    await page.click(SIGNIN_BUTTON_SELECTOR)
+
+    // Login to YouTube
+    await page.waitForSelector('#identifierId')
+    await page.type('#identifierId', credentials.username, { delay: 5 })
+    await page.click('#identifierNext')
+    await page.waitForSelector('#password input[type="password"]', { visible: true });
+    await page.type('#password input[type="password"]', credentials.password, { delay: 5 })
+    await page.waitFor(1000)
+    await page.click('#passwordNext')
+    await page.waitFor(3000)
+    console.log("SIGNED IN TO YOUTUBE");
+  }
+  else {
+    console.log("ALREADY SIGNED IN TO YOUTUBE");
+  }
 
   // Go to youtube video/channel link
   await page.goto(config.youtubeLink);
@@ -137,10 +164,15 @@ const run = async (config) => {
 
   // Take screenshot after everything is done
   await page.waitFor(2000)
-  await page.screenshot({path: `./screenshots/output_${config.id}.png`});
+  const screenshotPath = `./screenshots/output_${config.id}.png`
+  await page.screenshot({path: screenshotPath});
+
+  const cookiesToSave = await page.cookies()
+  helpers.saveToJSONFile(cookiesToSave, "cookies.json");
+  isRunSuccess = true;
 
   await browser.close();
+  return isRunSuccess
 };
-
 
 run(runnerConfig);
