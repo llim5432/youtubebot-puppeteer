@@ -168,7 +168,7 @@ const run = async (config) => {
   await page.screenshot({path: screenshotPath});
 
   const cookiesToSave = await page.cookies()
-  helpers.saveToJSONFile(cookiesToSave, "cookies.json");
+  helpers.saveToJSONFile(cookiesToSave, cookiesFilePath);
   isRunSuccess = true;
 
   await browser.close();

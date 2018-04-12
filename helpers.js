@@ -2,8 +2,8 @@ const fs = require("fs")
 
 exports.saveToJSONFile = async (jsonObj, targetFile) => {
 
-  if (!/^\//.test(targetFile))
-    targetFile = "./" + targetFile;
+  // if (!/^\//.test(targetFile))
+  //   targetFile = "./" + targetFile;
 
   return new Promise((resolve, reject) => {
 
