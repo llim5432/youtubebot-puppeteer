@@ -68,13 +68,18 @@ const run = async (config) => {
     }
     else {
       console.log('ALREADY SUBSCRIBED');
-      // Enable notifications if not enabled
-      if (await page.$(NOTIFICATINS_BUTTON_DISABLED_SELECTOR) !== null) {
-        await page.click(NOTIFICATINS_BUTTON_DISABLED_SELECTOR)
-        console.log("NOTIFICATIONS ENABLED");
-      }
-      else {
-        console.log('NOTIFICATIONS ALREADY ENABLED')
+      if (config.actions.includes('notifications'))
+      {
+        // Enable notifications if not enabled
+        if (await page.$(NOTIFICATINS_BUTTON_DISABLED_SELECTOR) !== null)
+        {
+          await page.click(NOTIFICATINS_BUTTON_DISABLED_SELECTOR)
+          console.log("NOTIFICATIONS ENABLED");
+        }
+        else
+        {
+          console.log('NOTIFICATIONS ALREADY ENABLED')
+        }
       }
     }
   }
