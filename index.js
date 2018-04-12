@@ -14,8 +14,8 @@ const preparePageEvasion = require('./prepare-page');
 
 const runnerConfig = {
   id: uuidv4(),
-  youtubeLink: "https://youtu.be/JaPP0j09eII",
-  actions: ['subscribe'],
+  youtubeLink: "https://t.co/2zCV24Iunc",
+  actions: ['subscribe', 'like', 'comment'],
   comment: "wow this is awesome!"
 };
 
@@ -165,8 +165,9 @@ const run = async (config) => {
   // Take screenshot after everything is done
   await page.waitFor(2000)
   const screenshotsFolder = './screenshots'
-  const screenshotPath = `${screenshotsFolder}/output_${config.id}.png`
+  const screenshotPath = `${screenshotsFolder}/run_${config.id}.png`
   await page.screenshot({path: screenshotPath});
+  console.log("SCREENSHOT SAVED");
 
   const cookiesToSave = await page.cookies()
   helpers.saveToJSONFile(cookiesToSave, cookiesFilePath);
