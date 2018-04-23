@@ -14,11 +14,12 @@ const preparePageEvasion = require('./prepare-page');
 
 const runnerConfig = {
   id: uuidv4(),
-  youtubeLink: "https://t.co/2zCV24Iunc",
-  actions: ['subscribe', 'like', 'comment'],
+  youtubeLink: "https://www.youtube.com/watch?v=BeSpKnVpT8M",
+  actions: ['subscribe', 'like', 'notifications'],
   comment: "wow this is awesome!"
 };
 
+const loadCookies = false;
 
 const run = async (config) => {
   const cookiesFilePath = './cookies.json'
@@ -28,7 +29,7 @@ const run = async (config) => {
   const browser = await puppeteer.launch({args: [
       '--no-sandbox',
     ],
-    headless: false
+    headless: true
   });
 
   const page = await browser.newPage();
@@ -37,7 +38,7 @@ const run = async (config) => {
 
   // Check for cookies in path and set cookies if exists
   const previousCookies = fs.existsSync(cookiesFilePath)
-  if (previousCookies) {
+  if (previousCookies && loadCookies === true) {
     // If file exist load the cookies
     const cookiesArr = require(cookiesFilePath)
     if (cookiesArr.length !== 0) {
