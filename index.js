@@ -14,22 +14,30 @@ const preparePageEvasion = require('./prepare-page');
 
 const runnerConfig = {
   id: uuidv4(),
-  youtubeLink: "https://www.youtube.com/watch?v=BeSpKnVpT8M",
-  actions: ['subscribe', 'like', 'notifications'],
-  comment: "wow this is awesome!"
+  accountSelected: "theeb1sea",
+  youtubeLink: "https://www.youtube.com/watch?v=6uSWwI8FEaU",
+  actions: ['like','comment','subscribe','notifications'],
+  comment: "wow this is awesome dude!"
 };
 
-const loadCookies = false;
+const loadCookies = true;
 
 const run = async (config) => {
-  const cookiesFilePath = './cookies.json'
-  console.log(`Running ${config.id}`)
+  if (credentials[config.accountSelected].username === null)
+  {
+  	console.log("Account credentials cannot be found")
+  	return
+  }
+
+  const cookiesFolder = `./cookies`
+  const cookiesFilePath = `${cookiesFolder}/cookies-${config.accountSelected}.json`
+  console.log(`Running ${config.accountSelected} - ${config.id}`)
   let isRunSuccess = false;
 
   const browser = await puppeteer.launch({args: [
       '--no-sandbox',
     ],
-    headless: true
+    headless: false
   });
 
   const page = await browser.newPage();
@@ -37,6 +45,9 @@ const run = async (config) => {
   await preparePageEvasion(page);
 
   // Check for cookies in path and set cookies if exists
+  if (!fs.existsSync(cookiesFolder)) {
+    fs.mkdirSync(cookiesFolder);
+  }
   const previousCookies = fs.existsSync(cookiesFilePath)
   if (previousCookies && loadCookies === true) {
     // If file exist load the cookies
@@ -51,16 +62,16 @@ const run = async (config) => {
 
   // Go to YouTube and check if signed in, if not sign in
   await page.goto('https://youtube.com');
-  const SIGNIN_BUTTON_SELECTOR = 'ytd-button-renderer.style-scope.ytd-masthead.style-brand a.yt-simple-endpoint.style-scope.ytd-button-renderer'
+  const SIGNIN_BUTTON_SELECTOR = 'yt-formatted-string.style-scope.ytd-button-renderer.style-blue-text.size-default'
   if (await page.$(SIGNIN_BUTTON_SELECTOR) !== null) {
     await page.click(SIGNIN_BUTTON_SELECTOR)
 
     // Login to YouTube
     await page.waitForSelector('#identifierId')
-    await page.type('#identifierId', credentials.username, { delay: 5 })
+    await page.type('#identifierId', credentials[config.accountSelected].username, { delay: 5 })
     await page.click('#identifierNext')
     await page.waitForSelector('#password input[type="password"]', { visible: true });
-    await page.type('#password input[type="password"]', credentials.password, { delay: 5 })
+    await page.type('#password input[type="password"]', credentials[config.accountSelected].password, { delay: 5 })
     await page.waitFor(1000)
     await page.click('#passwordNext')
     await page.waitFor(3000)
